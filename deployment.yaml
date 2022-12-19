@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend294-deployment
+  labels:
+    app: backend294
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend294
+  template:
+    metadata:
+      labels:
+        app: backend294
+    spec:
+      containers:
+      - name: backend294
+        image: ghcr.io/grasi-code/backend294:latest
+        ports:
+        - containerPort: 3000
+        env: 
+          - name: npm_config_cache
+            value: ./.npm-chache
+          - name: NODE_ENV
+            value: production
+    
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: backend294
+  name: backend294
+spec:
+  ports:
+  - name: 3000-tcp
+    port: 3000
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: backend294
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: backend294
+  name: backend294
+spec:
+  port:
+    targetPort: 3000-tcp
+  to:
+    kind: Service
+    name: backend294
+  tls:
+    termination: edge   
+    insecureEdgeTerminationPolicy: Redirect
